@@ -249,8 +249,8 @@ const AppResumeBar = ({ apps }: { apps: Array<AppResume> }) => {
         <CardContent>
           <Typography gutterBottom>Total</Typography>
           {relevance.healthy.length +
-            relevance.unhealthyDEV.length +
-            relevance.unhealthyPROD.length +
+            relevance.unhealthy.length +
+            relevance.unhealthyProduction.length +
             relevance.stopped.length}
         </CardContent>
       </Card>
@@ -271,21 +271,23 @@ const AppResumeBar = ({ apps }: { apps: Array<AppResume> }) => {
         </CardContent>
       </Card>
 
-      <Card
-        variant="outlined"
-        sx={{
-          flex: "1 0 19%",
-          "&:hover": {
-            boxShadow: "md",
-            borderColor: "neutral.outlinedHoverBorder",
-          },
-        }}
-      >
-        <CardContent>
-          <Typography gutterBottom>Unhealthy PROD</Typography>
-          {relevance.unhealthyPROD.length}
-        </CardContent>
-      </Card>
+      {config.productionPoolRegex && (
+        <Card
+          variant="outlined"
+          sx={{
+            flex: "1 0 19%",
+            "&:hover": {
+              boxShadow: "md",
+              borderColor: "neutral.outlinedHoverBorder",
+            },
+          }}
+        >
+          <CardContent>
+            <Typography gutterBottom>Unhealthy PROD</Typography>
+            {relevance.unhealthyProduction.length}
+          </CardContent>
+        </Card>
+      )}
 
       <Card
         variant="outlined"
@@ -298,8 +300,10 @@ const AppResumeBar = ({ apps }: { apps: Array<AppResume> }) => {
         }}
       >
         <CardContent>
-          <Typography gutterBottom>Unhealthy DEV</Typography>
-          {relevance.unhealthyDEV.length}
+          <Typography gutterBottom>
+            {config.productionPoolRegex ? "Unhealthy DEV" : "Unhealthy"}
+          </Typography>
+          {relevance.unhealthy.length}
         </CardContent>
       </Card>
 
@@ -360,18 +364,18 @@ const groupApps = (
   if (groupBy === "relevance") {
     const relevance = groupAppsByRelevance(apps);
 
-    if (relevance.unhealthyPROD.length > 0) {
+    if (relevance.unhealthyProduction.length > 0) {
       result.push({
         title: "Unhealthy PROD",
-        apps: relevance.unhealthyPROD,
+        apps: relevance.unhealthyProduction,
         expanded: true,
       });
     }
 
-    if (relevance.unhealthyDEV.length > 0) {
+    if (relevance.unhealthy.length > 0) {
       result.push({
-        title: "Unhealthy DEV",
-        apps: relevance.unhealthyDEV,
+        title: config.productionPoolRegex ? "Unhealthy DEV" : "Unhealthy",
+        apps: relevance.unhealthy,
         expanded: true,
       });
     }
@@ -535,21 +539,37 @@ const groupApps = (
   return result;
 };
 
-const groupAppsByRelevance = (apps: Array<AppResume>) => {
-  const unhealthyDEV: Array<AppResume> = [];
-  const unhealthyPROD: Array<AppResume> = [];
+type RelevanceGroups = {
+  unhealthyProduction: Array<AppResume>;
+  unhealthy: Array<AppResume>;
+  healthy: Array<AppResume>;
+  stopped: Array<AppResume>;
+};
+
+// Unhealthy apps are only split by environment when the deployment says which
+// of its pools are production, since that is a naming convention rather than
+// something tsuru itself models. Without it every unhealthy app lands in
+// `unhealthy` and the dashboard shows one group instead of two.
+const groupAppsByRelevance = (apps: Array<AppResume>): RelevanceGroups => {
+  const productionPoolRegex = config.productionPoolRegex;
+
+  const unhealthy: Array<AppResume> = [];
+  const unhealthyProduction: Array<AppResume> = [];
   const healthy: Array<AppResume> = [];
   const stopped: Array<AppResume> = [];
 
   for (const app of apps) {
-    const isPROD = app.pool && app.pool.endsWith("-prod");
+    const isProduction = Boolean(
+      productionPoolRegex && app.pool && productionPoolRegex.test(app.pool)
+    );
+
     if (app.units.total === 0) {
       stopped.push(app);
     } else if (app.units.error > 0) {
-      if (isPROD) {
-        unhealthyPROD.push(app);
+      if (isProduction) {
+        unhealthyProduction.push(app);
       } else {
-        unhealthyDEV.push(app);
+        unhealthy.push(app);
       }
     } else {
       healthy.push(app);
@@ -557,8 +577,8 @@ const groupAppsByRelevance = (apps: Array<AppResume>) => {
   }
 
   return {
-    unhealthyDEV,
-    unhealthyPROD,
+    unhealthyProduction,
+    unhealthy,
     healthy,
     stopped,
   };
@@ -576,4 +596,5 @@ const replaceHistory = (
   );
 };
 
+export { groupAppsByRelevance };
 export default AppsDashboard;

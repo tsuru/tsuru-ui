@@ -1,0 +1,225 @@
+// Deployment configuration for tsuru-ui.
+//
+// Copy this to `public/config.js` (development) or serve it next to
+// `index.html` as `${PUBLIC_URL}/config.js` (production). It is loaded at boot
+// as a native ES module -- not bundled -- and merged over the built-in
+// defaults in `src/configDefaults.ts`, so a rebuild is not needed to change it.
+//
+// The file is optional: without it the app boots on the defaults alone. Every
+// option below except `server` and `prefix` is optional, and the UI hides the
+// corresponding feature when one is missing rather than showing a dead link.
+//
+// Values here are illustrative. See `src/types/config.ts` for the exact types.
+
+export default {
+  // ---------------------------------------------------------------------
+  // Required
+  // ---------------------------------------------------------------------
+
+  // Base URL of the tsuru API. Reachable from the *browser*, not from the
+  // server serving this file. If the API sends no CORS headers, either enable
+  // them there or reverse-proxy the API under this app's own origin and point
+  // `server` at that path (e.g. "/api").
+  server: "https://tsuru.example.com",
+
+  // Path the UI is served under. Must match the PUBLIC_URL used at build time,
+  // and is used for the router basename, internal links and the OAuth callback.
+  // Use "" when serving from the root of a host.
+  prefix: "/ui",
+
+  // ---------------------------------------------------------------------
+  // Service catalog
+  // ---------------------------------------------------------------------
+
+  // Services given a first-class entry in the sidebar and a dedicated view.
+  // Anything not listed here still appears under the generic "Services" page.
+  // `engine` picks the view: "rpaas" and "acl" have bespoke ones, "generic"
+  // uses the default.
+  services: [
+    {
+      name: "rpaasv2",
+      title: "Ingress",
+      engine: "rpaas",
+      icon: "nginx",
+      // Other service names that should render with this same view.
+      additionalServices: ["rpaasv2-be"],
+    },
+    {
+      name: "acl",
+      title: "Network ACLs",
+      engine: "acl",
+      icon: "acl",
+    },
+    {
+      name: "mysql",
+      title: "MySQL",
+      engine: "generic",
+      icon: "mysql",
+      // Send instance links somewhere else, e.g. a dedicated service portal.
+      hrefForInstance: (service, instance) =>
+        `https://db.example.com/${service}/${instance}`,
+    },
+  ],
+
+  // ---------------------------------------------------------------------
+  // Pools and environments
+  // ---------------------------------------------------------------------
+
+  // Pools whose apps count as production. The apps dashboard uses this to
+  // split unhealthy apps into "Unhealthy PROD" and "Unhealthy DEV", and to
+  // decide whether a failing app card is shown as an error or a warning.
+  // Pool naming is a per-deployment convention: leave this unset and the
+  // dashboard shows a single "Unhealthy" group instead of guessing.
+  productionPoolRegex: /-prod$/,
+
+  // Optional grouping for the "Group by pool group" view on the apps
+  // dashboard. Each app falls into the first group whose `regex` matches its
+  // pool, skipping any that `ignoreRegex` matches.
+  appPoolGroups: [
+    {
+      name: "Production",
+      description: "Customer-facing pools",
+      regex: /-prod$/,
+      ignoreRegex: /-canary-prod$/,
+      suggestedSuffix: "-prod",
+    },
+    {
+      name: "Development",
+      description: "Staging and development pools",
+      regex: /-dev$/,
+    },
+  ],
+
+  // ---------------------------------------------------------------------
+  // Observability links
+  // ---------------------------------------------------------------------
+  //
+  // Each returns a URL, or the feature is hidden when the option is absent.
+  // The `iframe` argument is true when the UI embeds the dashboard inline
+  // rather than linking out to it -- most Grafana setups want `&kiosk` there.
+
+  grafanaURLForApp: (app, iframe) =>
+    `https://grafana.example.com/d/app?var-app=${app.name}${
+      iframe ? "&kiosk" : ""
+    }`,
+
+  grafanaURLForJob: (jobInfo, iframe) =>
+    `https://grafana.example.com/d/job?var-job=${jobInfo.job.name}${
+      iframe ? "&kiosk" : ""
+    }`,
+
+  grafanaURLForRPaaS: (cluster, service, instance, iframe) =>
+    `https://grafana.example.com/d/rpaas?var-cluster=${cluster}` +
+    `&var-service=${service}&var-instance=${instance}${iframe ? "&kiosk" : ""}`,
+
+  // Longer retention than the dashboards above, linked separately.
+  grafanaLongTermURLForApp: (app) =>
+    `https://grafana.example.com/d/app-lt?var-app=${app.name}`,
+
+  grafanaLongTermURLForRPaaS: (cluster, service, instance) =>
+    `https://grafana.example.com/d/rpaas-lt?var-cluster=${cluster}` +
+    `&var-service=${service}&var-instance=${instance}`,
+
+  // Deep links into the cloud provider's own log explorer, for logs beyond
+  // what the tsuru API streams.
+  cloudProviderLogsForAppUnit: (app, unit) =>
+    `https://logs.example.com/?app=${app.name}${unit ? `&unit=${unit}` : ""}`,
+
+  cloudProviderLogsForJob: (job) =>
+    `https://logs.example.com/?job=${job ? job.name : ""}`,
+
+  cloudProviderLogsForRPaaS: (pool, service, instance, pod, container) =>
+    `https://logs.example.com/?pool=${pool}&service=${service}` +
+    `&instance=${instance}${pod ? `&pod=${pod}` : ""}` +
+    `${container ? `&container=${container}` : ""}`,
+
+  // ---------------------------------------------------------------------
+  // CNAMEs and certificates
+  // ---------------------------------------------------------------------
+
+  // Issuers offered when adding a CNAME. A "No certificate" choice is always
+  // shown first; these are appended. `recommended` preselects one.
+  certificateIssuers: [
+    {
+      value: "lets-encrypt",
+      label: "Let's Encrypt",
+      description: "Ideal for most internet-facing applications.",
+      cost: "Free",
+      recommended: true,
+    },
+    {
+      value: "internal-ca",
+      label: "Internal CA",
+      description: "For systems not accessed by browsers.",
+      cost: "Free",
+    },
+  ],
+
+  // Shown on the CNAME form when the hostname sits behind a reverse proxy.
+  cnameReverseProxyDisclaimer: {
+    title: "This domain is served through the edge proxy",
+    conditions: [
+      "The certificate is terminated at the edge, not by the app",
+      "Origin requests arrive over plain HTTP",
+    ],
+    note: "Ask the networking team before changing the origin configuration.",
+  },
+
+  // Documentation cards on the CNAME form, each with a checkbox the user must
+  // tick to continue.
+  cnameDnsDocs: {
+    title: "DNS zone standards",
+    description: "Naming conventions and how the zone tree is organised.",
+    url: "https://docs.example.com/dns-zones",
+    checkboxLabel: "I have read the DNS zone standards",
+  },
+
+  cnameCertDocs: {
+    title: "Certificate manager",
+    description: "Supported issuers and how renewal works.",
+    url: "https://docs.example.com/certificates",
+    checkboxLabel: "I have read the certificate documentation",
+  },
+
+  // Where users go to create the DNS record itself.
+  cnameDnsPortalURL: "https://dns.example.com/",
+
+  // ---------------------------------------------------------------------
+  // Networking
+  // ---------------------------------------------------------------------
+
+  // Domain suffixes treated as internal when suggesting ACL rules. The
+  // defaults cover the generic Kubernetes ones; add your own here.
+  internalDomains: [".cluster.local", ".svc", ".internal.example.com"],
+
+  // Egress addresses for a cluster, shown on the app info page. Resolved
+  // lazily, so it may call an API of your own.
+  outBoundIPs: async (cluster) => {
+    const response = await fetch(`https://net.example.com/egress/${cluster}`);
+    return await response.text();
+  },
+
+  // ---------------------------------------------------------------------
+  // Links and help
+  // ---------------------------------------------------------------------
+
+  // Where the sidebar "Docs" entry points. Defaults to the upstream tsuru docs.
+  docsURL: "https://docs.tsuru.io",
+
+  // Per-platform "Deploy guide" links on the app create wizard. Platforms
+  // without an entry simply show no link.
+  platformGuides: {
+    go: "https://docs.example.com/platforms/go",
+    python: "https://docs.example.com/platforms/python",
+  },
+
+  // Resolves a team group to a page describing it, e.g. in an identity portal.
+  groupURL: (group) => `https://directory.example.com/groups/${group}`,
+
+  // Shown to users when something goes wrong, to point them at your support
+  // channel.
+  supportMessage: "Need help? Ask in #platform-support.",
+
+  // Adds a feedback link to the toolbar.
+  feedbackLink: "https://forms.example.com/tsuru-ui-feedback",
+};
