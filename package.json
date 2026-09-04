@@ -33,7 +33,7 @@
     "react-use": "^17.6.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "stream-json": "^3.5.0",
+    "stream-json": "^1.9.1",
     "styled-components": "^6.3.11",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
