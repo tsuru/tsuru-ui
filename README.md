@@ -39,8 +39,11 @@ export default {
 
 Everything deployment-specific — the service catalog, Grafana and cloud
 provider log links, pool groups, certificate issuers — is optional; the UI
-hides those features when the entry is missing. See `src/types/config.ts` for
-the full shape.
+hides those features when the entry is missing.
+
+[`public/config.js.example`](public/config.js.example) documents every option
+with a worked value; copy it to `public/config.js` and delete what you don't
+need. `src/types/config.ts` has the exact types.
 
 ## Build
 
