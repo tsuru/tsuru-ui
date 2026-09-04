@@ -7,7 +7,6 @@ import Link from "../base/JoyLink";
 import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import CloudCircleIcon from "@mui/icons-material/CloudCircle";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import CloudOffIcon from "@mui/icons-material/CloudOff";
 import { CardActionArea } from "@mui/material";
 
 type VolumeCardProps = {
@@ -26,20 +25,16 @@ const VolumeCard: FunctionComponent<VolumeCardProps> = ({
     icon = <CloudCircleIcon />;
   } else if (planName === "emptydir") {
     icon = <FolderOpenIcon />;
-  } else if (planName === "faas") {
-    icon = <CloudOffIcon />;
   }
 
-  const disabled = planName === "faas";
 
   return (
     <Card
-      variant={disabled ? "elevation" : "outlined"}
+      variant="outlined"
       sx={{
         minWidth: 320,
         flex: "1 0 24%",
         position: "relative",
-        backgroundColor: disabled ? "action.disabledBackground" : undefined,
         "&:hover": {
           boxShadow: 3,
         },
@@ -48,7 +43,6 @@ const VolumeCard: FunctionComponent<VolumeCardProps> = ({
       <CardActionArea
         href={`/volumes/${volumeName}`}
         LinkComponent={Link}
-        disabled={disabled}
       >
         <CardContent>
           <Typography
