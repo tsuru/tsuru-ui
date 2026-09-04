@@ -12,6 +12,7 @@ import config from "./config";
 import { AuthContextProvider } from "./contexts/auth";
 import { CssBaseline, styled } from "@mui/material";
 import { createMaterialTheme } from "./style";
+import { RouteErrorBoundary } from "./components/base/ErrorBoundary";
 import { ThemeModeProvider, useThemeMode } from "./contexts/themeMode";
 
 const sideBarOpenOnBoot = window.localStorage.tsuruSideBarOpen !== "false";
@@ -72,7 +73,11 @@ const AppContent = () => {
       />
       <TsuruSidebar expanded={sideBarOpen} />
       <MainBox expanded={sideBarOpen}>
-        <TsuruRouter />
+        {/* Only the routed area, so a broken view leaves the toolbar and
+            sidebar in place to navigate away with. */}
+        <RouteErrorBoundary>
+          <TsuruRouter />
+        </RouteErrorBoundary>
       </MainBox>
     </Box>
   );
