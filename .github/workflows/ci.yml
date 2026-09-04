@@ -17,7 +17,7 @@ concurrency:
 
 env:
   NODE_VERSION: "22"
-  ARTIFACT_REPO: docker.io/tsuru/tsuru-ui
+  IMAGE_REPO: docker.io/tsuru/tsuru-ui
 
 jobs:
   test:
@@ -99,7 +99,7 @@ jobs:
         run: npm run typecheck
 
   publish:
-    name: Publish ORAS artifact
+    name: Publish image
     # Pull requests never publish: they have no access to the secrets anyway.
     if: github.event_name == 'push'
     needs: [test, lint]
@@ -110,19 +110,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oras-project/setup-oras@v1
-        with:
-          version: "1.3.2"
-
       # Before the build, so missing or stale credentials fail in seconds
       # rather than after a couple of minutes of webpack.
       - name: Log in to Docker Hub
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          printf '%s' "$DOCKERHUB_TOKEN" |
-            oras login docker.io --username "$DOCKERHUB_USERNAME" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -131,34 +125,43 @@ jobs:
 
       - run: npm ci
 
-      # PUBLIC_URL is inlined at build time, so this artifact only serves under
+      # PUBLIC_URL is inlined at build time, so this image only serves under
       # /ui. make build also drops tsuru-static-config/nginx.conf into build/.
       - name: Build
         run: make build
 
-      - name: Push artifact
-        env:
-          REVISION: ${{ github.sha }}
-          SOURCE: ${{ github.server_url }}/${{ github.repository }}
-        run: |
-          oras push \
-            --artifact-type application/vnd.tsuru.ui.static.v1 \
-            --annotation "org.opencontainers.image.source=$SOURCE" \
-            --annotation "org.opencontainers.image.revision=$REVISION" \
-            --annotation "org.opencontainers.image.version=$TAG" \
-            --annotation "org.opencontainers.image.licenses=BSD-3-Clause" \
-            --annotation "io.tsuru.ui.public-url=/ui" \
-            "$ARTIFACT_REPO:$TAG" \
-            build/
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Report published artifact
+      # The context is the build output, so the image holds that tree and
+      # nothing else. Both platforms carry identical files, but a single-arch
+      # image would not mount on a node of the other architecture.
+      - name: Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: build
+          file: Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          tags: ${{ env.IMAGE_REPO }}:${{ env.TAG }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ env.TAG }}
+            org.opencontainers.image.licenses=BSD-3-Clause
+            io.tsuru.ui.public-url=/ui
+
+      - name: Report published image
         run: |
           {
             echo "## Published"
             echo
-            echo "\`$ARTIFACT_REPO:$TAG\` from ${{ github.sha }}"
+            echo "\`$IMAGE_REPO:$TAG\` from ${{ github.sha }}"
             echo
-            echo '```sh'
-            echo "oras pull $ARTIFACT_REPO:$TAG"
+            echo '```yaml'
+            echo "volumes:"
+            echo "  - name: ui"
+            echo "    image:"
+            echo "      reference: $IMAGE_REPO:$TAG"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

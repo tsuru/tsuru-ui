@@ -64,19 +64,33 @@ plus eslint (no errors and no warnings allowed), `prettier --check` and
 The app is served under `/ui`. `PUBLIC_URL` is inlined at build time, so
 serving it under a different prefix requires a rebuild.
 
-## Published artifact
+## Published image
 
 Once the checks pass, pushes to `main` and git tags publish `build/` to Docker
-Hub as an OCI artifact via [ORAS](https://oras.land) — `main` keeps `latest`
-current, a tag publishes under its own name:
+Hub as `docker.io/tsuru/tsuru-ui` — `main` keeps `latest` current, a tag
+publishes under its own name.
 
-```sh
-oras pull docker.io/tsuru/tsuru-ui:latest   # unpacks build/ into the cwd
+The image is the built tree (`nginx.conf` included) on top of `scratch` and
+nothing else, so it holds no shell and no entrypoint: it exists to be mounted,
+not run. Mount it as a Kubernetes [image
+volume](https://kubernetes.io/blog/2025/04/29/kubernetes-v1-33-image-volume-beta/)
+(GA in 1.36, on by default since 1.35) next to an nginx container:
+
+```yaml
+volumes:
+  - name: ui
+    image:
+      reference: docker.io/tsuru/tsuru-ui:latest
 ```
 
-It is an artifact, not a runnable image: the layer is the `build/` tree
-(`nginx.conf` included) as `application/vnd.tsuru.ui.static.v1`, annotated with
-the source revision and the `/ui` prefix it was built for.
+It is a plain OCI image rather than an ORAS artifact on purpose. containerd
+cannot mount artifacts that carry the empty config
+(`application/vnd.oci.empty.v1+json`) that `oras push` produces — it fails with
+`mismatched image rootfs and manifest layers`, tracked in
+[containerd#11381](https://github.com/containerd/containerd/issues/11381).
+CRI-O can, but a normal image mounts on both. It is published for `linux/amd64`
+and `linux/arm64`: the files are identical, but the runtime resolves the
+manifest by node architecture.
 
 Publishing needs two repository secrets, `DOCKERHUB_USERNAME` and
 `DOCKERHUB_TOKEN` (a Docker Hub access token with write access to
