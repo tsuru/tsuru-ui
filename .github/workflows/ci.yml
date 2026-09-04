@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ["*"]
   pull_request:
 
 permissions:
@@ -10,10 +11,13 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded pull request runs are pointless, but a main or tag run may be
+  # halfway through publishing.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   NODE_VERSION: "22"
+  ARTIFACT_REPO: docker.io/tsuru/tsuru-ui
 
 jobs:
   test:
@@ -93,3 +97,68 @@ jobs:
       - name: TypeScript
         if: ${{ !cancelled() }}
         run: npm run typecheck
+
+  publish:
+    name: Publish ORAS artifact
+    # Pull requests never publish: they have no access to the secrets anyway.
+    if: github.event_name == 'push'
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    env:
+      # main keeps latest current, a git tag publishes under its own name
+      TAG: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oras-project/setup-oras@v1
+        with:
+          version: "1.3.2"
+
+      # Before the build, so missing or stale credentials fail in seconds
+      # rather than after a couple of minutes of webpack.
+      - name: Log in to Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          printf '%s' "$DOCKERHUB_TOKEN" |
+            oras login docker.io --username "$DOCKERHUB_USERNAME" --password-stdin
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # PUBLIC_URL is inlined at build time, so this artifact only serves under
+      # /ui. make build also drops tsuru-static-config/nginx.conf into build/.
+      - name: Build
+        run: make build
+
+      - name: Push artifact
+        env:
+          REVISION: ${{ github.sha }}
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          oras push \
+            --artifact-type application/vnd.tsuru.ui.static.v1 \
+            --annotation "org.opencontainers.image.source=$SOURCE" \
+            --annotation "org.opencontainers.image.revision=$REVISION" \
+            --annotation "org.opencontainers.image.version=$TAG" \
+            --annotation "org.opencontainers.image.licenses=BSD-3-Clause" \
+            --annotation "io.tsuru.ui.public-url=/ui" \
+            "$ARTIFACT_REPO:$TAG" \
+            build/
+
+      - name: Report published artifact
+        run: |
+          {
+            echo "## Published"
+            echo
+            echo "\`$ARTIFACT_REPO:$TAG\` from ${{ github.sha }}"
+            echo
+            echo '```sh'
+            echo "oras pull $ARTIFACT_REPO:$TAG"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

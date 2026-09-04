@@ -64,6 +64,25 @@ plus eslint (no errors and no warnings allowed), `prettier --check` and
 The app is served under `/ui`. `PUBLIC_URL` is inlined at build time, so
 serving it under a different prefix requires a rebuild.
 
+## Published artifact
+
+Once the checks pass, pushes to `main` and git tags publish `build/` to Docker
+Hub as an OCI artifact via [ORAS](https://oras.land) — `main` keeps `latest`
+current, a tag publishes under its own name:
+
+```sh
+oras pull docker.io/tsuru/tsuru-ui:latest   # unpacks build/ into the cwd
+```
+
+It is an artifact, not a runnable image: the layer is the `build/` tree
+(`nginx.conf` included) as `application/vnd.tsuru.ui.static.v1`, annotated with
+the source revision and the `/ui` prefix it was built for.
+
+Publishing needs two repository secrets, `DOCKERHUB_USERNAME` and
+`DOCKERHUB_TOKEN` (a Docker Hub access token with write access to
+`tsuru/tsuru-ui`). Until they are set the publish job fails at its login step,
+which runs before the build so it costs seconds; test and lint are unaffected.
+
 ## License
 
 BSD 3-Clause. See [LICENSE](LICENSE).
