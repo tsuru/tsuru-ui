@@ -70,9 +70,10 @@ Once the checks pass, pushes to `main` and git tags publish `build/` to Docker
 Hub as `docker.io/tsuru/tsuru-ui` — `main` keeps `latest` current, a tag
 publishes under its own name.
 
-The image is the built tree (`nginx.conf` included) on top of `scratch` and
-nothing else, so it holds no shell and no entrypoint: it exists to be mounted,
-not run. Mount it as a Kubernetes [image
+The image is the built tree on top of `scratch` and nothing else, so it holds
+no shell and no entrypoint: it exists to be mounted, not run. `nginx.conf` is
+left out — it is there for the tsuru deploy, while whatever serves this volume
+brings its own config. Mount it as a Kubernetes [image
 volume](https://kubernetes.io/blog/2025/04/29/kubernetes-v1-33-image-volume-beta/)
 (GA in 1.36, on by default since 1.35) next to an nginx container:
 
