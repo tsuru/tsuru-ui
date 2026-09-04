@@ -3,6 +3,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Link from "../base/JoyLink";
+import config from "../../config";
 import { Chip, useTheme, alpha, CardActionArea } from "@mui/material";
 
 type AppCardProps = {
@@ -26,7 +27,16 @@ const AppCard: FunctionComponent<AppCardProps> = ({
   poolName,
 }) => {
   const fullHealthy = units.ready === units.total && units.total > 0;
-  const isPROD = poolName && poolName.endsWith("-prod");
+
+  // Failures outside production are shown as a warning rather than a danger,
+  // but only where the deployment has said which of its pools are production.
+  // Pool naming is a per-deployment convention, so without that every pool is
+  // treated alike and the real severity is shown.
+  const productionPoolRegex = config.productionPoolRegex;
+  const isNonProductionPool = productionPoolRegex
+    ? !(poolName && productionPoolRegex.test(poolName))
+    : false;
+
   const theme = useTheme();
   let secondaryText: string = "";
   let color: string | undefined = undefined;
@@ -49,7 +59,7 @@ const AppCard: FunctionComponent<AppCardProps> = ({
     secondaryText = `${units.created} units is waiting to start`;
   }
 
-  if (!isPROD && color === "danger") {
+  if (isNonProductionPool && color === "danger") {
     color = "warning";
   }
 

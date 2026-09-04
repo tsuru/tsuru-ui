@@ -5,10 +5,10 @@ import { Config } from "./types/config";
 // over these (see configRuntime.ts).
 //
 // Everything deployment-specific -- observability links, cloud provider log
-// URLs, pool groups, certificate issuers, the service catalog -- is left unset
-// here. The UI hides those features when the corresponding entry is missing, so
-// a plain checkout runs without them rather than pointing at someone else's
-// infrastructure.
+// URLs, pool groups, which pools are production, certificate issuers, the
+// service catalog -- is left unset here. The UI hides those features when the
+// corresponding entry is missing, so a plain checkout runs without them rather
+// than pointing at someone else's infrastructure.
 const config: Config = {
   server: "http://localhost:8080",
   prefix: "/ui",

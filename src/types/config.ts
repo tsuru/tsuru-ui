@@ -33,6 +33,12 @@ type Config = {
   ): string;
   groupURL?: (group: string) => string;
 
+  // Pools whose apps count as production on the apps dashboard, which splits
+  // unhealthy apps into production and non-production. Pool naming is a
+  // per-deployment convention, so without this the dashboard shows a single
+  // unhealthy group rather than guessing.
+  productionPoolRegex?: RegExp;
+
   supportMessage?: string;
   feedbackLink?: string;
   platformGuides?: Record<string, string>;
