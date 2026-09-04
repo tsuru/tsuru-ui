@@ -287,8 +287,10 @@ const AppScaleView = () => {
 
       if (executionPhase === "scaling") {
         const activeAction =
-          horizontalConfig.mode === "manual" ? manualScale : autoscale;
-        if (activeAction.action.value || activeAction.action.error) {
+          horizontalConfig.mode === "manual"
+            ? manualScale.action
+            : autoscale.action;
+        if (activeAction.value || activeAction.error) {
           setExecutionPhase("done");
         }
       }

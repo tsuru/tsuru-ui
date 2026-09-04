@@ -86,26 +86,29 @@ const TsuruLog: FunctionComponent<TsuruLogProps> = (props) => {
   const [count, setCount] = useState(0);
   const [streaming, setStreaming] = useState(false);
 
+  const appName = props.app?.name;
+  const jobName = props.job?.name;
+
   useEffect(() => {
     if (streaming) {
       streamer.start({
         fetch,
-        app: props.app?.name,
-        job: props.job?.name,
+        app: appName,
+        job: jobName,
         appLogFilter,
       });
     } else {
       if (
         !streamer.bufferPreviousPopulated({
-          app: props.app?.name,
-          job: props.job?.name,
+          app: appName,
+          job: jobName,
           appLogFilter,
         })
       ) {
         streamer.fillBuffer({
           fetch,
-          app: props.app?.name,
-          job: props.job?.name,
+          app: appName,
+          job: jobName,
           appLogFilter,
         });
       }
@@ -113,7 +116,7 @@ const TsuruLog: FunctionComponent<TsuruLogProps> = (props) => {
     }
 
     return () => streamer.stop();
-  }, [appLogFilter, fetch, streaming]);
+  }, [appLogFilter, fetch, streaming, appName, jobName]);
 
   useEffect(() => {
     const a = new URLSearchParams(appLogFilter).toString();

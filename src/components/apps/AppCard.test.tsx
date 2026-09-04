@@ -4,7 +4,7 @@ import { alpha, createTheme } from "@mui/material";
 
 import AppCard from "./AppCard";
 import config from "../../config";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 // Which pools count as production is deployment-specific, so the card is
 // exercised against a fixture the test controls.
@@ -22,14 +22,13 @@ const warning = alpha(theme.palette.warning.main, 0.08);
 // The severity only shows up as the Card's background colour, and the Card is
 // the rendered root, so this reaches for it directly rather than through a
 // query.
-const cardFor = (poolName?: string) => {
+const cardFor = (
+  poolName?: string,
+  units = { ready: 0, total: 10, error: 1 }
+) => {
   const { container } = render(
     <BrowserRouter>
-      <AppCard
-        appName="blah"
-        units={{ ready: 0, total: 10, error: 1 }}
-        poolName={poolName}
-      />
+      <AppCard appName="blah" units={units} poolName={poolName} />
     </BrowserRouter>
   );
 
@@ -62,16 +61,10 @@ test("renders error units", () => {
 });
 
 test("renders zero units", async () => {
-  const result = render(
-    <BrowserRouter>
-      <AppCard appName="blah" units={{ ready: 0, total: 0, error: 0 }} />
-    </BrowserRouter>
-  );
-  const linkElement = screen.queryByText("units");
-  expect(
-    result.container.getElementsByClassName("MuiPaper-elevation1")
-  ).toHaveLength(1);
-  expect(linkElement).toBeNull();
+  const card = cardFor(undefined, { ready: 0, total: 0, error: 0 });
+
+  expect(card).toHaveClass("MuiPaper-elevation1");
+  expect(screen.queryByText("units")).toBeNull();
 });
 
 test("marks unit errors as danger when no production pool is configured", () => {

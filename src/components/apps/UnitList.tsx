@@ -48,7 +48,11 @@ function UnitList(props: UnitListProps) {
     initialKillDialogState
   );
 
-  const killUnitHook = useKillUnit(props.app?.name ?? "");
+  const {
+    killUnit,
+    reset: resetKillUnit,
+    error: killUnitError,
+  } = useKillUnit(props.app?.name ?? "");
 
   const unitMetricMap: Map<string, UnitMetric> = new Map();
 
@@ -119,13 +123,13 @@ function UnitList(props: UnitListProps) {
   );
 
   const handleKillConfirm = useCallback(async (): Promise<boolean> => {
-    return killUnitHook.killUnit(killDialog.unitName, killDialog.force);
-  }, [killUnitHook.killUnit, killDialog.unitName, killDialog.force]);
+    return killUnit(killDialog.unitName, killDialog.force);
+  }, [killUnit, killDialog.unitName, killDialog.force]);
 
   const handleKillDialogClose = useCallback(() => {
     setKillDialog(initialKillDialogState);
-    killUnitHook.reset();
-  }, [killUnitHook.reset]);
+    resetKillUnit();
+  }, [resetKillUnit]);
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "Name", minWidth: 400, flex: 1 },
@@ -295,7 +299,7 @@ function UnitList(props: UnitListProps) {
         onConfirm={handleKillConfirm}
         onCancel={handleKillDialogClose}
         onSuccess={props.onRefresh}
-        error={killUnitHook.error}
+        error={killUnitError}
       />
     </>
   );

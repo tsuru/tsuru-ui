@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import ScheduleForm from "./ScheduleForm";
 import { AppAutoscaleSchedule } from "../../types/app";
@@ -157,12 +157,12 @@ describe("ScheduleForm", () => {
 
     // Initially expanded (default state)
     expect(screen.getByLabelText(/schedule name/i)).toBeVisible();
+    expect(screen.getByTestId("ExpandLessIcon")).toBeInTheDocument();
 
-    // Click to collapse
-    const header = screen.getByText("Test Schedule").closest("div");
-    if (header) {
-      fireEvent.click(header);
-    }
+    // The whole header row toggles the card, so a click on the title bubbles up
+    fireEvent.click(screen.getByText("Test Schedule"));
+
+    expect(screen.getByTestId("ExpandMoreIcon")).toBeInTheDocument();
   });
 
   test("removes schedule when delete button is clicked", () => {

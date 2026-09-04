@@ -5,7 +5,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { FunctionComponent } from "react";

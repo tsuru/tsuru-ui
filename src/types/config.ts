@@ -1,6 +1,5 @@
 import { App } from "./app";
 import { Job, JobInfo } from "./jobs";
-import { ServiceInstanceInfo } from "./serviceInstance";
 
 type Config = {
   server: string;

@@ -1,10 +1,4 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { BrowserRouter } from "react-router-dom";
 import AppCNameAddView from "./AppCNameAddView";
@@ -99,11 +93,7 @@ const enterCName = (value: string) => {
 };
 
 const clickMethodCard = (name: string) => {
-  const heading = screen.getAllByText(new RegExp(name, "i"))[0];
-  const button = heading.closest("button")!;
-  act(() => {
-    fireEvent.click(button);
-  });
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(name, "i") }));
 };
 
 describe("AppCNameAddView", () => {
@@ -218,17 +208,13 @@ describe("AppCNameAddView", () => {
     acknowledgeCertDocs();
     clickMethodCard("Web Interface");
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
 
-    await waitFor(() => {
-      expect(mockAddCName).toHaveBeenCalledWith(TEST_CNAME);
-      expect(mockSetCertIssuer).toHaveBeenCalledWith(
-        TEST_CNAME,
-        "test-lets-encrypt"
-      );
-    });
+    await waitFor(() => expect(mockAddCName).toHaveBeenCalledWith(TEST_CNAME));
+    expect(mockSetCertIssuer).toHaveBeenCalledWith(
+      TEST_CNAME,
+      "test-lets-encrypt"
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/CNAME Added Successfully/i)).toBeInTheDocument();
@@ -242,20 +228,14 @@ describe("AppCNameAddView", () => {
     enterCName(TEST_CNAME);
     acknowledgeCertDocs();
 
-    act(() => {
-      fireEvent.click(screen.getByText(/No certificate/i));
-    });
+    fireEvent.click(screen.getByText(/No certificate/i));
 
     clickMethodCard("Web Interface");
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
 
-    await waitFor(() => {
-      expect(mockAddCName).toHaveBeenCalledWith(TEST_CNAME);
-      expect(mockSetCertIssuer).not.toHaveBeenCalled();
-    });
+    await waitFor(() => expect(mockAddCName).toHaveBeenCalledWith(TEST_CNAME));
+    expect(mockSetCertIssuer).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(screen.getByText(/CNAME Added Successfully/i)).toBeInTheDocument();
@@ -272,9 +252,7 @@ describe("AppCNameAddView", () => {
     acknowledgeCertDocs();
     clickMethodCard("Web Interface");
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /Add CNAME/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/CNAME already exists/i)).toBeInTheDocument();

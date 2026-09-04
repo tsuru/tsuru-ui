@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AppAutoscaleList from "./AppAutoscaleList";
 import { AppAutoscaleSchedule, AppAutoscalePrometheus } from "../../types/app";
@@ -43,6 +43,27 @@ const worker_schedules: AppAutoscaleSchedule[] = [
   },
 ];
 
+// The process row renders the expand toggle as a plain cell and the remaining
+// columns as row headers (`component="th"`), so they are queried separately.
+const expectProcessRow = (
+  process: string,
+  minUnits: string,
+  maxUnits: string
+) => {
+  const row = screen
+    .getAllByRole("row")
+    .find((candidate) =>
+      within(candidate).queryByRole("rowheader", { name: process })
+    );
+  expect(row).toBeDefined();
+  expect(within(row!).getByRole("cell")).toHaveTextContent("");
+  expect(
+    within(row!)
+      .getAllByRole("rowheader")
+      .map((cell) => cell.textContent)
+  ).toEqual([process, minUnits, maxUnits, "Edit"]);
+};
+
 test("render autoscales", () => {
   render(
     <BrowserRouter>
@@ -70,23 +91,8 @@ test("render autoscales", () => {
       />
     </BrowserRouter>
   );
-  var td = screen.getByText("web");
-  td.parentNode?.childNodes;
-  expect(td.parentNode?.childNodes).toHaveLength(5);
-  expect(td.parentNode?.childNodes[0].textContent).toEqual("");
-  expect(td.parentNode?.childNodes[1].textContent).toEqual("web");
-  expect(td.parentNode?.childNodes[2].textContent).toEqual("1");
-  expect(td.parentNode?.childNodes[3].textContent).toEqual("3");
-  expect(td.parentNode?.childNodes[4].textContent).toEqual("Edit");
-
-  td = screen.getByText("worker");
-  td.parentNode?.childNodes;
-  expect(td.parentNode?.childNodes).toHaveLength(5);
-  expect(td.parentNode?.childNodes[0].textContent).toEqual("");
-  expect(td.parentNode?.childNodes[1].textContent).toEqual("worker");
-  expect(td.parentNode?.childNodes[2].textContent).toEqual("2");
-  expect(td.parentNode?.childNodes[3].textContent).toEqual("5");
-  expect(td.parentNode?.childNodes[4].textContent).toEqual("Edit");
+  expectProcessRow("web", "1", "3");
+  expectProcessRow("worker", "2", "5");
 
   var schedule = screen.queryByLabelText("process scalers");
   expect(schedule).toBeNull(); //process scalers details is hidden
@@ -151,14 +157,7 @@ test("render autoscale without schedule", () => {
       />
     </BrowserRouter>
   );
-  var td = screen.getByText("web");
-  td.parentNode?.childNodes;
-  expect(td.parentNode?.childNodes).toHaveLength(5);
-  expect(td.parentNode?.childNodes[0].textContent).toEqual("");
-  expect(td.parentNode?.childNodes[1].textContent).toEqual("web");
-  expect(td.parentNode?.childNodes[2].textContent).toEqual("1");
-  expect(td.parentNode?.childNodes[3].textContent).toEqual("3");
-  expect(td.parentNode?.childNodes[4].textContent).toEqual("Edit");
+  expectProcessRow("web", "1", "3");
 
   var schedule = screen.queryByLabelText("process scalers");
   expect(schedule).toBeNull(); //process scalers details is hidden
@@ -193,14 +192,7 @@ test("render autoscale without cpu", () => {
       />
     </BrowserRouter>
   );
-  var td = screen.getByText("web");
-  td.parentNode?.childNodes;
-  expect(td.parentNode?.childNodes).toHaveLength(5);
-  expect(td.parentNode?.childNodes[0].textContent).toEqual("");
-  expect(td.parentNode?.childNodes[1].textContent).toEqual("web");
-  expect(td.parentNode?.childNodes[2].textContent).toEqual("1");
-  expect(td.parentNode?.childNodes[3].textContent).toEqual("3");
-  expect(td.parentNode?.childNodes[4].textContent).toEqual("Edit");
+  expectProcessRow("web", "1", "3");
 
   var schedule = screen.queryByLabelText("process scalers");
   expect(schedule).toBeNull(); //process scalers details is hidden

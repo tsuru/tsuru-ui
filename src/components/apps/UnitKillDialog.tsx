@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, useEffect } from "react";
+import { FunctionComponent, useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -65,6 +65,12 @@ const UnitKillDialog: FunctionComponent<UnitKillDialogProps> = ({
     }
   }, [externalError, status]);
 
+  // Kept in a ref so a new onSuccess identity does not restart the countdown.
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (status === "success" && countdown > 0) {
@@ -72,7 +78,7 @@ const UnitKillDialog: FunctionComponent<UnitKillDialogProps> = ({
         setCountdown((prev) => prev - 1);
       }, 1000);
     } else if (status === "success" && countdown === 0) {
-      onSuccess?.();
+      onSuccessRef.current?.();
     }
     return () => clearTimeout(timer);
   }, [status, countdown]);

@@ -144,12 +144,12 @@ describe("PrometheusMetricForm", () => {
 
     // Initially expanded (default state)
     expect(screen.getByLabelText(/metric name/i)).toBeVisible();
+    expect(screen.getByTestId("ExpandLessIcon")).toBeInTheDocument();
 
-    // Click to collapse
-    const header = screen.getByText("test_metric").closest("div");
-    if (header) {
-      fireEvent.click(header);
-    }
+    // The whole header row toggles the card, so a click on the title bubbles up
+    fireEvent.click(screen.getByText("test_metric"));
+
+    expect(screen.getByTestId("ExpandMoreIcon")).toBeInTheDocument();
   });
 
   test("removes metric when delete button is clicked", () => {
@@ -256,21 +256,16 @@ describe("PrometheusMetricForm", () => {
       />
     );
 
-    const queryInputs = screen.getAllByRole("textbox");
-    const queryInput = queryInputs.find((input) =>
-      input.getAttribute("placeholder")?.includes("http_requests_total")
-    );
+    const queryInput = screen.getByPlaceholderText(/http_requests_total/);
 
-    if (queryInput) {
-      fireEvent.change(queryInput, { target: { value: "new_query" } });
+    fireEvent.change(queryInput, { target: { value: "new_query" } });
 
-      expect(mockOnMetricsChange).toHaveBeenCalledWith([
-        {
-          ...metrics[0],
-          query: "new_query",
-        },
-      ]);
-    }
+    expect(mockOnMetricsChange).toHaveBeenCalledWith([
+      {
+        ...metrics[0],
+        query: "new_query",
+      },
+    ]);
   });
 
   test("updates prometheus address", () => {
@@ -353,24 +348,14 @@ describe("PrometheusMetricForm", () => {
     });
     fireEvent.click(showExamplesButton);
 
-    // Click on a sample query box - need to click on the actual box containing the sample
-    const requestRateSample = screen.getByText("Request Rate");
-    const sampleBox = requestRateSample.closest(".MuiBox-root");
+    // The whole sample box is clickable, so a click on its title bubbles up
+    fireEvent.click(screen.getByText("Request Rate"));
 
-    expect(sampleBox).toBeTruthy();
+    // Should have been called with the sample query
+    await waitFor(() => expect(mockOnMetricsChange).toHaveBeenCalled());
 
-    if (sampleBox) {
-      fireEvent.click(sampleBox);
-
-      // Should have been called with the sample query
-      await waitFor(() => {
-        expect(mockOnMetricsChange).toHaveBeenCalled();
-      });
-
-      const calls = mockOnMetricsChange.mock.calls;
-      const firstCall = calls[0][0];
-      expect(firstCall[0].query).toContain("http_requests_total");
-    }
+    const firstCall = mockOnMetricsChange.mock.calls[0][0];
+    expect(firstCall[0].query).toContain("http_requests_total");
   });
 
   test("displays threshold > 0 in chip", () => {

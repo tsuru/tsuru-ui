@@ -205,15 +205,9 @@ describe("AppScaleView", () => {
       </BrowserRouter>
     );
 
-    const buttons = screen.getAllByRole("button");
-    const automaticButton = buttons.find((btn) =>
-      btn.textContent?.includes("Automatic")
-    );
+    fireEvent.click(screen.getByRole("button", { name: /Automatic/i }));
 
-    if (automaticButton) {
-      fireEvent.click(automaticButton);
-      expect(screen.getByText(/Scale based on metrics/i)).toBeInTheDocument();
-    }
+    expect(screen.getByText(/Scale based on metrics/i)).toBeInTheDocument();
   });
 
   test("shows warning when switching from autoscale to manual", () => {
@@ -241,18 +235,11 @@ describe("AppScaleView", () => {
       </BrowserRouter>
     );
 
-    const buttons = screen.getAllByRole("button");
-    const manualButton = buttons.find((btn) =>
-      btn.textContent?.includes("Manual")
-    );
+    fireEvent.click(screen.getByRole("button", { name: /Manual/i }));
 
-    if (manualButton) {
-      fireEvent.click(manualButton);
-
-      expect(
-        screen.getByText(/remove the existing autoscale configuration/i)
-      ).toBeInTheDocument();
-    }
+    expect(
+      screen.getByText(/remove the existing autoscale configuration/i)
+    ).toBeInTheDocument();
   });
 
   test("shows manual scale configuration with unit input", () => {
@@ -285,18 +272,12 @@ describe("AppScaleView", () => {
     );
 
     // Switch to automatic
-    const buttons = screen.getAllByRole("button");
-    const automaticButton = buttons.find((btn) =>
-      btn.textContent?.includes("Automatic")
-    );
-    if (automaticButton) {
-      fireEvent.click(automaticButton);
+    fireEvent.click(screen.getByRole("button", { name: /Automatic/i }));
 
-      expect(screen.getByLabelText(/Minimum Units/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Maximum Units/i)).toBeInTheDocument();
-      const cpuTargets = screen.getAllByText(/CPU Target/i);
-      expect(cpuTargets.length).toBeGreaterThan(0);
-    }
+    expect(screen.getByLabelText(/Minimum Units/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Maximum Units/i)).toBeInTheDocument();
+    const cpuTargets = screen.getAllByText(/CPU Target/i);
+    expect(cpuTargets.length).toBeGreaterThan(0);
   });
 
   test("shows CPU slider with color indicators", () => {
@@ -307,17 +288,11 @@ describe("AppScaleView", () => {
     );
 
     // Switch to automatic
-    const buttons = screen.getAllByRole("button");
-    const automaticButton = buttons.find((btn) =>
-      btn.textContent?.includes("Automatic")
-    );
-    if (automaticButton) {
-      fireEvent.click(automaticButton);
+    fireEvent.click(screen.getByRole("button", { name: /Automatic/i }));
 
-      // Should show CPU target chip with percentage
-      const chips = screen.queryAllByText(/\d+%/);
-      expect(chips.length).toBeGreaterThan(0);
-    }
+    // Should show CPU target chip with percentage
+    const chips = screen.queryAllByText(/\d+%/);
+    expect(chips.length).toBeGreaterThan(0);
   });
 
   test("shows breadcrumbs with app name", () => {
@@ -340,10 +315,9 @@ describe("AppScaleView", () => {
       </BrowserRouter>
     );
 
-    const applyButton = screen
-      .getByText(/Apply Horizontal Scale/i)
-      .closest("button");
-    expect(applyButton).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /Apply Horizontal Scale/i })
+    ).toBeDisabled();
   });
 
   test("calculates delta correctly for manual scaling", () => {
@@ -383,21 +357,14 @@ describe("AppScaleView", () => {
     );
 
     // Switch to automatic
-    const buttons = screen.getAllByRole("button");
-    const automaticButton = buttons.find((btn) =>
-      btn.textContent?.includes("Automatic")
-    );
-    if (automaticButton) {
-      fireEvent.click(automaticButton);
+    fireEvent.click(screen.getByRole("button", { name: /Automatic/i }));
 
-      const minInput = screen.getByLabelText(/Minimum Units/i);
-      fireEvent.change(minInput, { target: { value: "0" } });
+    const minInput = screen.getByLabelText(/Minimum Units/i);
+    fireEvent.change(minInput, { target: { value: "0" } });
 
-      const applyButton = screen
-        .getByText(/Apply Horizontal Scale/i)
-        .closest("button");
-      expect(applyButton).toBeDisabled();
-    }
+    expect(
+      screen.getByRole("button", { name: /Apply Horizontal Scale/i })
+    ).toBeDisabled();
   });
 
   test("loads existing autoscale configuration", () => {
@@ -449,10 +416,8 @@ describe("AppScaleView", () => {
     expect(screen.getByLabelText(/Number of Units/i)).toBeInTheDocument();
 
     // Switch to vertical tab
-    const verticalTab = screen.getByText(/Vertical Scale/i).closest("button");
-    if (verticalTab) {
-      fireEvent.click(verticalTab);
-      expect(screen.getByText(/Apply Vertical Scale/i)).toBeInTheDocument();
-    }
+    fireEvent.click(screen.getByRole("tab", { name: /Vertical Scale/i }));
+
+    expect(screen.getByText(/Apply Vertical Scale/i)).toBeInTheDocument();
   });
 });

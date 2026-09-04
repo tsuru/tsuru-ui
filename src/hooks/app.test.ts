@@ -43,9 +43,7 @@ describe("App Scale Hooks", () => {
 
       mockFetch.mockResolvedValue(mockResponse as any);
 
-      const { result } = renderHook(() =>
-        useAppScaleManual("test-app", "web", 3, false)
-      );
+      renderHook(() => useAppScaleManual("test-app", "web", 3, false));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/apps/test-app/units", {
@@ -81,9 +79,7 @@ describe("App Scale Hooks", () => {
 
       mockFetch.mockResolvedValue(mockResponse as any);
 
-      const { result } = renderHook(() =>
-        useAppScaleManual("test-app", "web", -2, false)
-      );
+      renderHook(() => useAppScaleManual("test-app", "web", -2, false));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/apps/test-app/units", {
@@ -151,11 +147,9 @@ describe("App Scale Hooks", () => {
 
       mockFetch.mockResolvedValue(mockResponse as any);
 
-      const { result } = renderHook(() =>
-        useAppScaleAutoscale("test-app", mockConfig, false)
-      );
+      renderHook(() => useAppScaleAutoscale("test-app", mockConfig, false));
 
-      await waitFor(() => {
+      await waitFor(() =>
         expect(mockFetch).toHaveBeenCalledWith(
           "/apps/test-app/units/autoscale",
           expect.objectContaining({
@@ -164,17 +158,17 @@ describe("App Scale Hooks", () => {
               "Content-Type": "application/json",
             },
           })
-        );
+        )
+      );
 
-        const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
-        expect(callBody).toEqual({
-          process: "web",
-          minUnits: 2,
-          maxUnits: 10,
-          averageCPU: "70%",
-          schedules: undefined,
-          prometheus: undefined,
-        });
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
+      expect(callBody).toEqual({
+        process: "web",
+        minUnits: 2,
+        maxUnits: 10,
+        averageCPU: "70%",
+        schedules: undefined,
+        prometheus: undefined,
       });
     });
 
@@ -209,11 +203,11 @@ describe("App Scale Hooks", () => {
         useAppScaleAutoscale("test-app", configWithSchedules, false)
       );
 
-      await waitFor(() => {
-        const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
-        expect(callBody.schedules).toBeDefined();
-        expect(callBody.schedules).toHaveLength(1);
-      });
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
+      expect(callBody.schedules).toBeDefined();
+      expect(callBody.schedules).toHaveLength(1);
     });
 
     test("includes prometheus metrics when provided", async () => {
@@ -247,11 +241,11 @@ describe("App Scale Hooks", () => {
         useAppScaleAutoscale("test-app", configWithMetrics, false)
       );
 
-      await waitFor(() => {
-        const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
-        expect(callBody.prometheus).toBeDefined();
-        expect(callBody.prometheus).toHaveLength(1);
-      });
+      await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
+      expect(callBody.prometheus).toBeDefined();
+      expect(callBody.prometheus).toHaveLength(1);
     });
 
     test("does not call API when dryRun is true", () => {
@@ -305,9 +299,7 @@ describe("App Scale Hooks", () => {
 
       mockFetch.mockResolvedValue(mockResponse as any);
 
-      const { result } = renderHook(() =>
-        useAppDeleteAutoscale("test-app", "web", false)
-      );
+      renderHook(() => useAppDeleteAutoscale("test-app", "web", false));
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(

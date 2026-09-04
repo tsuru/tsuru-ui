@@ -58,8 +58,8 @@ make prettier    # format src/ in place
 Every push to `main` and every pull request runs
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml): tests with a coverage
 report in the job summary (and the full lcov/HTML report as an artifact),
-plus eslint, `prettier --check` and `tsc --noEmit`. ESLint is report-only for
-now — the test files still carry pre-existing `react-app/jest` violations.
+plus eslint (no errors and no warnings allowed), `prettier --check` and
+`tsc --noEmit`.
 
 The app is served under `/ui`. `PUBLIC_URL` is inlined at build time, so
 serving it under a different prefix requires a rebuild.

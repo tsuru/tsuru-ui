@@ -65,11 +65,8 @@ jobs:
 
       - run: npm ci
 
-      # Report-only for now: the test files carry pre-existing violations of the
-      # react-app/jest rules. Drop continue-on-error once they are cleaned up.
       - name: ESLint
         id: eslint
-        continue-on-error: true
         run: |
           set -o pipefail
           npm run --silent lint | tee eslint-report.txt
@@ -90,7 +87,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prettier
+        if: ${{ !cancelled() }}
         run: npm run format:check
 
       - name: TypeScript
+        if: ${{ !cancelled() }}
         run: npm run typecheck
