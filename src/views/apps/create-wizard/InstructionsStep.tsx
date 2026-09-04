@@ -112,9 +112,7 @@ const CLIInstructions: FunctionComponent<{ formData: AppFormData }> = ({
       ? formData.appName
       : `${formData.appName} ${formData.platform}`;
 
-  const tagArgs = (formData.tags || [])
-    .map((tag) => ` --tag ${tag}`)
-    .join("");
+  const tagArgs = (formData.tags || []).map((tag) => ` --tag ${tag}`).join("");
 
   return (
     <Stack spacing={3}>
@@ -212,9 +210,7 @@ provider "tsuru" {
   host = "${config.server}"
 }`;
 
-  const tagsTfList = (formData.tags || [])
-    .map((tag) => `"${tag}"`)
-    .join(", ");
+  const tagsTfList = (formData.tags || []).map((tag) => `"${tag}"`).join(", ");
 
   const appTfCode = `resource "tsuru_app" "${formData.appName.replace(
     /-/g,

@@ -13,4 +13,10 @@ build:
 	cp -Rf tsuru-static-config/nginx.conf build/
 
 test:
-	npx react-app-rewired test --watchAll=false
+	npm run test:ci
+
+lint:
+	npm run lint
+
+typecheck:
+	npm run typecheck

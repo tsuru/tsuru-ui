@@ -231,8 +231,6 @@ const TsuruSidebar: FunctionComponent<TsuruSidebarProps> = ({ expanded }) => {
               external
             />
 
-
-
             <SectionHeader title="Admin" sidebarExpanded={expanded} />
 
             <NavLink

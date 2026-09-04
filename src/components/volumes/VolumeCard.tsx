@@ -27,7 +27,6 @@ const VolumeCard: FunctionComponent<VolumeCardProps> = ({
     icon = <FolderOpenIcon />;
   }
 
-
   return (
     <Card
       variant="outlined"
@@ -40,10 +39,7 @@ const VolumeCard: FunctionComponent<VolumeCardProps> = ({
         },
       }}
     >
-      <CardActionArea
-        href={`/volumes/${volumeName}`}
-        LinkComponent={Link}
-      >
+      <CardActionArea href={`/volumes/${volumeName}`} LinkComponent={Link}>
         <CardContent>
           <Typography
             variant="body2"

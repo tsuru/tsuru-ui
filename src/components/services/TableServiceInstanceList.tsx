@@ -22,7 +22,10 @@ const TableServiceInstanceList = ({
       headerName: "Name",
       flex: 0.5,
       renderCell(params) {
-        const [href] = hrefForInstance(params.row.service_name, params.row.name);
+        const [href] = hrefForInstance(
+          params.row.service_name,
+          params.row.name
+        );
         return <Link href={href}>{params.row.name}</Link>;
       },
     },

@@ -46,9 +46,7 @@ const RPaasCertificatesList = (props: RPaasCertificatesListProps) => {
               {certificate.PublicKeyBitSize > 0 ? (
                 `Active ${certificate.PublicKeyBitSize} bits ${certificate.PublicKeyAlgorithm} key`
               ) : (
-                <span>
-                  Pending
-                </span>
+                <span>Pending</span>
               )}
             </TableCell>
           </TableRow>

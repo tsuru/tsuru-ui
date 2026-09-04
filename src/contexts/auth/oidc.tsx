@@ -27,7 +27,9 @@ const createProvider = (): Provider => {
       .join(", ");
     return () => (
       <DisplayError
-        error={new Error(`oidc auth scheme is missing required data: ${missing}`)}
+        error={
+          new Error(`oidc auth scheme is missing required data: ${missing}`)
+        }
       />
     );
   }

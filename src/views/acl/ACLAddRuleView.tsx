@@ -47,7 +47,9 @@ import DisplayError from "../../components/base/DisplayError";
 // Derived on render rather than at import time, since the services come from
 // the config loaded at boot.
 const rpaasServicesFromConfig = () =>
-  (config.services || []).filter((s) => s.engine === "rpaas").map((s) => s.name);
+  (config.services || [])
+    .filter((s) => s.engine === "rpaas")
+    .map((s) => s.name);
 
 type ACLAddRuleProps = {
   service: string;

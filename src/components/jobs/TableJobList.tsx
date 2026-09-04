@@ -11,9 +11,7 @@ const TableJobList = ({ rows }: { rows: Array<Job> }) => {
       headerName: "Name",
       flex: 0.5,
       renderCell(params) {
-        return (
-          <Link href={`/jobs/${params.row.name}`}>{params.row.name}</Link>
-        );
+        return <Link href={`/jobs/${params.row.name}`}>{params.row.name}</Link>;
       },
     },
     {

@@ -29,7 +29,9 @@ const createProvider = (): Provider => {
   if (!data.authorizeUrl) {
     return () => (
       <DisplayError
-        error={new Error("oauth auth scheme is missing required data: authorizeUrl")}
+        error={
+          new Error("oauth auth scheme is missing required data: authorizeUrl")
+        }
       />
     );
   }
@@ -69,7 +71,9 @@ const createProvider = (): Provider => {
 
     const { token } = await response.json();
     if (!token) {
-      throw new Error("the tsuru API returned no token for the authorization code");
+      throw new Error(
+        "the tsuru API returned no token for the authorization code"
+      );
     }
 
     return token;

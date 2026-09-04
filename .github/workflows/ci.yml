@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  test:
+    name: Tests & coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run tests with coverage
+        env:
+          CI: "true"
+        run: |
+          npm run test:ci -- \
+            --coverage \
+            --coverageReporters=text-summary \
+            --coverageReporters=json-summary \
+            --coverageReporters=lcov
+
+      - name: Report coverage
+        if: always()
+        run: node .github/scripts/coverage-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
+          if-no-files-found: warn
+
+  lint:
+    name: Lint & types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Report-only for now: the test files carry pre-existing violations of the
+      # react-app/jest rules. Drop continue-on-error once they are cleaned up.
+      - name: ESLint
+        id: eslint
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run --silent lint | tee eslint-report.txt
+
+      - name: Report ESLint
+        if: always()
+        run: |
+          {
+            echo "## ESLint"
+            echo
+            if [ "${{ steps.eslint.outcome }}" = "success" ]; then
+              echo "No problems reported."
+            else
+              echo '```'
+              tail -c 60000 eslint-report.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prettier
+        run: npm run format:check
+
+      - name: TypeScript
+        run: npm run typecheck
