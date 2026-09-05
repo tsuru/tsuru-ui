@@ -93,10 +93,6 @@ CRI-O can, but a normal image mounts on both. It is published for `linux/amd64`
 and `linux/arm64`: the files are identical, but the runtime resolves the
 manifest by node architecture.
 
-Publishing needs two repository secrets, `DOCKERHUB_USERNAME` and
-`DOCKERHUB_PASSWORD` (a Docker Hub password or access token with write access
-to `tsuru/tsuru-ui`). Until they are set the publish job fails at its login step,
-which runs before the build so it costs seconds; test and lint are unaffected.
 
 ## License
 
