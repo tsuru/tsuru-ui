@@ -27,7 +27,7 @@
     "querystring-es3": "^0.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^6.30.3",
+    "react-router-dom": "^6.30.6",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.6.6",
     "react-use": "^17.6.0",
