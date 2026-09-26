@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import AppConfigurationStep from "./AppConfigurationStep";
@@ -54,11 +54,8 @@ const pool = (name: string, teams: Array<string>): Pool => ({
 const pools = [pool("dev-a-dev", ["myteam"]), pool("dev-b-prod", ["other"])];
 
 // The pool and platform selects share the same role, so the pool one is found
-// through its own section.
-const poolSelect = () => {
-  const section = screen.getByText("Pool").closest(".MuiCard-root");
-  return within(section as HTMLElement).getByRole("combobox");
-};
+// through its own label.
+const poolSelect = () => screen.getByLabelText("Select pool");
 
 const asyncValue = <T,>(value: T) =>
   ({ loading: false, value, error: undefined } as any);

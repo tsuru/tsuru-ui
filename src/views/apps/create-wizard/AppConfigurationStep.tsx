@@ -387,8 +387,9 @@ const AppConfigurationStep: FunctionComponent<AppConfigurationStepProps> = ({
           )}
           {platformsAvailable.value && (
             <FormControl fullWidth size="small">
-              <InputLabel>Select platform</InputLabel>
+              <InputLabel id="select-platform-label">Select platform</InputLabel>
               <Select
+                labelId="select-platform-label"
                 value={formData.platform || ""}
                 onChange={(e) => onChange({ platform: e.target.value })}
                 label="Select platform"
@@ -506,8 +507,9 @@ const AppConfigurationStep: FunctionComponent<AppConfigurationStepProps> = ({
             )}
             {!poolsAvailable.loading && filteredPools.length > 0 && (
               <FormControl fullWidth size="small">
-                <InputLabel>Select pool</InputLabel>
+                <InputLabel id="select-pool-label">Select pool</InputLabel>
                 <Select
+                  labelId="select-pool-label"
                   value={formData.pool || ""}
                   onChange={(e) => onChange({ pool: e.target.value })}
                   label="Select pool"
