@@ -1,0 +1,20 @@
+#!/bin/sh
+# Mirrors the "Lint & types" CI job so a push never fails on something a
+# 20-second local check would have caught. Run `make setup` to install.
+#
+# Scoped to all of src/ rather than the staged files on purpose: CI checks the
+# whole tree, so checking less here would let a green commit turn CI red.
+set -e
+
+echo "pre-commit: eslint"
+npm run --silent lint
+
+echo "pre-commit: prettier"
+if ! npm run --silent format:check; then
+  echo
+  echo "Run 'make prettier' to fix, then stage the result."
+  exit 1
+fi
+
+echo "pre-commit: tsc"
+npm run --silent typecheck

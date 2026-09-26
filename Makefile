@@ -3,6 +3,7 @@ prettier:
 
 setup:
 	npm install
+	git config core.hooksPath .githooks
 
 run:
 	PUBLIC_URL=/ui npm start
@@ -20,3 +21,9 @@ lint:
 
 typecheck:
 	npm run typecheck
+
+format-check:
+	npm run format:check
+
+# Everything CI checks, in one command.
+check: lint format-check typecheck test
