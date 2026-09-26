@@ -61,6 +61,12 @@ const FormSection: FunctionComponent<FormSectionProps> = ({
 }) => {
   const theme = useTheme();
 
+  // A section whose content is entirely config-driven renders nothing when
+  // that config is absent, instead of an empty card.
+  if (!children) {
+    return null;
+  }
+
   return (
     <Card
       elevation={0}
@@ -126,20 +132,30 @@ const FormSection: FunctionComponent<FormSectionProps> = ({
   );
 };
 
+const hasPoolGroups = (): boolean => Boolean(config.appPoolGroups?.length);
+
 const filterPools = (
   allPools: Array<Pool>,
   poolGroup?: string,
   team?: string
 ): Array<Pool> => {
-  if (!config.appPoolGroups) {
-    return allPools;
+  // Without pool groups there is no environment to narrow by, so every pool
+  // the team is allowed into is offered directly. A pool listing no team is
+  // unrestricted, so it stays in the list.
+  if (!hasPoolGroups()) {
+    if (!team) {
+      return allPools;
+    }
+    return allPools.filter(
+      (p) => !p.allowed?.team?.length || p.allowed.team.includes(team)
+    );
   }
 
   if (!poolGroup) {
     return [];
   }
 
-  for (const fullPoolGroup of config.appPoolGroups) {
+  for (const fullPoolGroup of config.appPoolGroups || []) {
     if (fullPoolGroup.name !== poolGroup) {
       continue;
     }
@@ -284,9 +300,9 @@ const AppConfigurationStep: FunctionComponent<AppConfigurationStepProps> = ({
           icon={CloudQueue}
           status={isPoolGroupComplete ? "complete" : undefined}
         >
-          {config.appPoolGroups && (
+          {hasPoolGroups() && (
             <Grid container spacing={1.5}>
-              {config.appPoolGroups.map((poolGroup) => (
+              {config.appPoolGroups?.map((poolGroup) => (
                 <Grid
                   key={poolGroup.name}
                   size={{
@@ -466,7 +482,11 @@ const AppConfigurationStep: FunctionComponent<AppConfigurationStepProps> = ({
           />
         </FormSection>
 
-        <Collapse in={Boolean(formData.poolGroup && formData.team)}>
+        <Collapse
+          in={Boolean(
+            formData.team && (!hasPoolGroups() || formData.poolGroup)
+          )}
+        >
           <FormSection
             title="Pool"
             subtitle="Select the infrastructure pool for your application"

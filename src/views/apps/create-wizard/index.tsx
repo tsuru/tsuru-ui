@@ -46,13 +46,17 @@ const AppCreateWizard: FunctionComponent = () => {
   const isStep1Valid = Boolean(formData.createMethod);
 
   const isStep2Valid = useMemo(() => {
+    // The pool group is only part of the form when the deployment configures
+    // pool groups; otherwise the pool is picked directly.
+    const poolGroupRequired = Boolean(config.appPoolGroups?.length);
+
     return Boolean(
       formData.appName &&
         formData.appName.length >= 2 &&
         formData.platform &&
         formData.team &&
         formData.pool &&
-        formData.poolGroup
+        (!poolGroupRequired || formData.poolGroup)
     );
   }, [formData]);
 
