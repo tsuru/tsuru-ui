@@ -4,6 +4,7 @@ import { AuthContext, AuthContextProviderProps, Fetcher } from "./auth/base";
 
 import { default as OIDCAuthContextProvider } from "./auth/oidc";
 import { default as OAuth2AuthContextProvider } from "./auth/oauth2";
+import { default as NativeAuthContextProvider } from "./auth/native";
 import DisplayError from "../components/base/DisplayError";
 
 const useFetch = (): Fetcher => {
@@ -37,12 +38,16 @@ const pickProvider = (): Provider => {
     return OAuth2AuthContextProvider;
   }
 
+  if (scheme.name === "native") {
+    return NativeAuthContextProvider;
+  }
+
   return () => (
     <DisplayError
       error={
         new Error(
           `unsupported auth scheme "${scheme.name}"; ` +
-            `tsuru-ui supports "oidc" and "oauth"`
+            `tsuru-ui supports "native", "oidc" and "oauth"`
         )
       }
     />

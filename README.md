@@ -20,7 +20,10 @@ make run     # dev server on http://localhost:3000/ui
 
 The UI needs a reachable tsuru API. It defaults to `http://localhost:8080` and
 discovers how to authenticate from the API itself (`/1.18/auth/schemes`), the
-same way the CLI does — native, oauth2 and oidc are supported.
+same way the CLI does — native, oauth2 and oidc are supported. oauth2 and oidc
+redirect to the identity provider; native has none, so the UI shows its own
+sign-in form and trades the credentials for a tsuru token, just like
+`tsuru login`.
 
 ## Configuration
 
