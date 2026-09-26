@@ -387,7 +387,9 @@ const AppConfigurationStep: FunctionComponent<AppConfigurationStepProps> = ({
           )}
           {platformsAvailable.value && (
             <FormControl fullWidth size="small">
-              <InputLabel id="select-platform-label">Select platform</InputLabel>
+              <InputLabel id="select-platform-label">
+                Select platform
+              </InputLabel>
               <Select
                 labelId="select-platform-label"
                 value={formData.platform || ""}
